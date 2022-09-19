@@ -45,6 +45,40 @@ class GameState():
             self.board[move.endRow][move.endCol] = move.pieceCaptured
             self.whiteToMove = not self.whiteToMove
 
+    def getValidMoves(self):
+        """
+        All moves considering checks.
+        """
+        return self.getAllPossibleMoves()
+
+    def getAllPossibleMoves(self):
+        """
+        All moves without considering checks.
+        """
+        moves = []
+        for row in range(len(self.board)):
+            for col in range(len(self.board[row])):
+                turn = self.board[row][col][0]
+                if (turn == 'w' and self.whiteToMove) and (turn == 'b' and not self.whiteToMove):
+                    piece = self.board[row][col][1]
+                    if piece == 'p':
+                        self.getPawnMoves(row, col, moves)
+                    elif piece == 'R':
+                        self.getRookMoves(row, col, moves)
+        return moves
+
+    def getPawnMoves(self, row, col, moves):
+        """
+        Get all pawn moves for pawn locate at row, col and add them to moves
+        """
+        pass
+
+    def getRookMoves(self, row, col, moves):
+        """
+        Get all rook moves for pawn locate at row, col and add them to moves
+        """
+        pass
+
 
 class Move():
     # maps keys to values
@@ -69,6 +103,13 @@ class Move():
         self.endCol = endSq[1]
         self.pieceMoved = board[self.startRow][self.startCol]
         self.pieceCaptured = board[self.endRow][self.endCol]
+        self.moveID = self.startRow * 1000 + self.startCol * \
+            100 + self.endRow * 10 + self.endCol
+
+    def __eq__(self, other):
+        if isinstance(other, Move):
+            return True
+        return False
 
     def getChessNotation(self):
         return self.getRankFile(self.startRow, self.startCol) + " " + self.getRankFile(self.endRow, self.endCol)

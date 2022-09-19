@@ -40,6 +40,9 @@ def main():
     clock = pygame.time.Clock()
     screen.fill(pygame.Color('white'))
     gs = ChessEngine.GameState()
+    validMoves = gs.getValidMoves()
+    moveMade = False  # Flag variable when move is made
+
     # print(gs.board)
     load_images()
     running = True
@@ -67,15 +70,21 @@ def main():
                         gs.board
                     )
                     print(move.getChessNotation())
-                    gs.makeMove(move)
+                    if move in validMoves:
+                        gs.makeMove(move)
+                        moveMade = True
                     # reset user clicks
                     sq_selected = ()
                     player_clicks = []
+
             elif e.type == pygame.KEYDOWN:  # Key Handler
                 if e.key == pygame.K_z:
                     # undo move when 'z' is pressed
                     gs.undoMove()
-
+                    moveMade = True
+        if moveMade:
+            validMoves = gs.getValidMoves()
+            moveMade = False
         drawGameState(screen, gs)
         clock.tick(MAX_FPS)
         pygame.display.flip()
