@@ -69,8 +69,8 @@ def main():
                         player_clicks[1],
                         gs.board
                     )
-                    print(move.getChessNotation())
                     if move in validMoves:
+                        print(move.getChessNotation())
                         gs.makeMove(move)
                         moveMade = True
                     # reset user clicks

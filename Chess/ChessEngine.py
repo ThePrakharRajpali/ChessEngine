@@ -22,6 +22,15 @@ class GameState():
             ["wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"],
             ["wR", "wN", "wB", "wQ", "wK", "wB", "wN", "wR"]
         ]
+        self.moveFunctions = {
+            'p': self.getPawnMoves,
+            'R': self.getRookMoves,
+            'N': self.getKnightMoves,
+            'B': self.getBishopMoves,
+            'Q': self.getQueenMoves,
+            'K': self.getKingMoves
+        }
+
         self.whiteToMove = True
         self.moveLog = []
 
@@ -59,25 +68,214 @@ class GameState():
         for row in range(len(self.board)):
             for col in range(len(self.board[row])):
                 turn = self.board[row][col][0]
-                if (turn == 'w' and self.whiteToMove) and (turn == 'b' and not self.whiteToMove):
+                if (turn == 'w' and self.whiteToMove) or \
+                        (turn == 'b' and not self.whiteToMove):
                     piece = self.board[row][col][1]
-                    if piece == 'p':
-                        self.getPawnMoves(row, col, moves)
-                    elif piece == 'R':
-                        self.getRookMoves(row, col, moves)
+                    self.moveFunctions[piece](row, col, moves)
         return moves
 
     def getPawnMoves(self, row, col, moves):
         """
         Get all pawn moves for pawn locate at row, col and add them to moves
         """
-        pass
+        if self.whiteToMove:
+            if self.board[row - 1][col] == "--":
+                # pawn can move forward 1 square
+                moves.append(
+                    Move(
+                        (row, col),
+                        (row - 1, col),
+                        self.board
+                    )
+                )
+                if row == 6 and self.board[row - 2][col] == "--":
+                    # pawn can move 2 square forward
+                    moves.append(
+                        Move(
+                            (row, col),
+                            (row - 2, col),
+                            self.board
+                        )
+                    )
+            if col - 1 >= 0:
+                # Capture to left
+                if self.board[row - 1][col - 1][0] == 'b':
+                    moves.append(
+                        Move(
+                            (row, col),
+                            (row - 1, col - 1),
+                            self.board
+                        )
+                    )
+            if col + 1 <= 7:
+                # Capture to right
+                if self.board[row - 1][col + 1][0] == 'b':
+                    moves.append(
+                        Move(
+                            (row, col),
+                            (row - 1, col + 1),
+                            self.board
+                        )
+                    )
+        else:
+            if self.board[row + 1][col] == "--":
+                # Forward 1 squares
+                moves.append(
+                    Move(
+                        (row, col),
+                        (row + 1, col),
+                        self.board
+                    )
+                )
+                if row == 1 and self.board[row + 2][col] == "--":
+                    # Forward 2 squares
+                    moves.append(
+                        Move(
+                            (row, col),
+                            (row + 2, col),
+                            self.board
+                        )
+                    )
+            if col - 1 >= 0:
+                # capture left
+                if self.board[row + 1][col - 1][0] == 'w':
+                    moves.append(
+                        Move(
+                            (row, col),
+                            (row + 1, col - 1),
+                            self.board
+                        )
+                    )
+            if col + 1 <= 7:
+                if self.board[row + 1][col + 1][0] == 'w':
+                    moves.append(
+                        Move(
+                            (row, col),
+                            (row + 1, col + 1),
+                            self.board
+                        )
+                    )
+        # TODO: Add pawn promotion
 
     def getRookMoves(self, row, col, moves):
         """
         Get all rook moves for pawn locate at row, col and add them to moves
         """
-        pass
+        directions = ((-1, 0), (0, -1), (1, 0), (0, 1))
+        enemyColor = 'b' if self.whiteToMove else 'w'
+        for d in directions:
+            for i in range(1, 8):
+                endRow = row + d[0] * i
+                endCol = col + d[1] * i
+                if 0 <= endRow < 8 and 0 <= endCol < 8:
+                    endPiece = self.board[endRow][endCol]
+                    if endPiece == '--':
+                        moves.append(
+                            Move(
+                                (row, col),
+                                (endRow, endCol),
+                                self.board
+                            )
+                        )
+                    elif endPiece[0] == enemyColor:
+                        moves.append(
+                            Move(
+                                (row, col),
+                                (endRow, endCol),
+                                self.board
+                            )
+                        )
+                        break
+                    else:
+                        break
+                else:
+                    break
+
+    def getKnightMoves(self, row, col, moves):
+        """
+        Get all knight moves for pawn locate at row, col and add them to moves
+        """
+        knightMoves = ((-2, -1), (-2, 1), (-1, -2), (-1, 2),
+                       (1, -2), (1, 2), (2, -1), (2, 1))
+        allyColor = "w" if self.whiteToMove else "b"
+        for m in knightMoves:
+            endRow = row + m[0]
+            endCol = col + m[1]
+            if 0 <= endRow < 8 and 0 <= endCol < 8:
+                endPiece = self.board[endRow][endCol]
+                if endPiece[0] != allyColor:
+                    moves.append(
+                        Move(
+                            (row, col),
+                            (endRow, endCol),
+                            self.board
+                        )
+                    )
+
+    def getBishopMoves(self, row, col, moves):
+        """
+        Get all bishop moves for pawn locate at row, col and add them to moves
+        """
+        directions = ((-1, -1), (-1, 1), (1, -1), (1, 1))
+        enemyColor = 'b' if self.whiteToMove else 'w'
+        for d in directions:
+            for i in range(1, 8):
+                endRow = row + d[0] * i
+                endCol = col + d[1] * i
+                if 0 <= endRow < 8 and 0 <= endCol < 8:
+                    endPiece = self.board[endRow][endCol]
+                    if endPiece == '--':
+                        moves.append(
+                            Move(
+                                (row, col),
+                                (endRow, endCol),
+                                self.board
+                            )
+                        )
+                    elif endPiece[0] == enemyColor:
+                        moves.append(
+                            Move(
+                                (row, col),
+                                (endRow, endCol),
+                                self.board
+                            )
+                        )
+                        break
+                    else:
+                        break
+                else:
+                    break
+
+    def getQueenMoves(self, row, col, moves):
+        """
+        Get all queen moves for pawn locate at row, col and add them to moves
+        """
+        self.getBishopMoves(row, col, moves)
+        self.getRookMoves(row, col, moves)
+
+    def getKingMoves(self, row, col, moves):
+        """
+        Get all king moves for pawn locate at row, col and add them to moves
+        """
+        kingMoves = (
+            (-1, -1), (-1, 0), (-1, 1),
+            (0, -1), (0, 1),
+            (1, -1), (1, 0), (1, 1)
+        )
+        allyColor = "w" if self.whiteToMove else "b"
+        for m in kingMoves:
+            endRow = row + m[0]
+            endCol = col + m[1]
+            if 0 <= endRow < 8 and 0 <= endCol < 8:
+                endPiece = self.board[endRow][endCol]
+                if endPiece[0] != allyColor:
+                    moves.append(
+                        Move(
+                            (row, col),
+                            (endRow, endCol),
+                            self.board
+                        )
+                    )
 
 
 class Move():
@@ -108,11 +306,12 @@ class Move():
 
     def __eq__(self, other):
         if isinstance(other, Move):
-            return True
+            return self.moveID == other.moveID
         return False
 
     def getChessNotation(self):
-        return self.getRankFile(self.startRow, self.startCol) + " " + self.getRankFile(self.endRow, self.endCol)
+        return self.getRankFile(self.startRow, self.startCol) + \
+            " " + self.getRankFile(self.endRow, self.endCol)
 
     def getRankFile(self, r, c):
         return self.colsToFiles[c] + self.rowsToRanks[r]
