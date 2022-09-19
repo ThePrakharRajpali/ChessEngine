@@ -73,9 +73,11 @@ def main():
                         print(move.getChessNotation())
                         gs.makeMove(move)
                         moveMade = True
-                    # reset user clicks
-                    sq_selected = ()
-                    player_clicks = []
+                        # reset user clicks
+                        sq_selected = ()
+                        player_clicks = []
+                    else:
+                        player_clicks = [sq_selected]
 
             elif e.type == pygame.KEYDOWN:  # Key Handler
                 if e.key == pygame.K_z:

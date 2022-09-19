@@ -1,11 +1,10 @@
-"""
-This class is responsible for storing information about current state of chess game. 
-Responsible for determining the valid move.
-Keep a move log
-"""
-
-
 class GameState():
+    """
+    This class is responsible for storing information about current state of chess game. 
+    Responsible for determining the valid move.
+    Keep a move log
+    """
+
     def __init__(self):
         # Board is 8x8 2D List,
         # Each Element of the list has 2 Characters
@@ -34,6 +33,12 @@ class GameState():
         self.whiteToMove = True
         self.moveLog = []
 
+        self.whiteKingLocation = (7, 4)
+        self.blackKingLocation = (0, 4)
+
+        self.checkMate = False
+        self.staleMate = False
+
     def makeMove(self, move):
         """
         Takes a move ass parameter and executes it.
@@ -43,6 +48,11 @@ class GameState():
         self.board[move.endRow][move.endCol] = move.pieceMoved
         self.moveLog.append(move)  # Log move, for undo it later
         self.whiteToMove = not self.whiteToMove
+        # update the kings' location
+        if move.pieceMoved == 'wK':
+            self.whiteKingLocation = (move.endRow, move.endCol)
+        if move.pieceMoved == "bK":
+            self.blackKingLocation = (move.endRow, move.endCol)
 
     def undoMove(self):
         """
@@ -53,12 +63,61 @@ class GameState():
             self.board[move.startRow][move.startCol] = move.pieceMoved
             self.board[move.endRow][move.endCol] = move.pieceCaptured
             self.whiteToMove = not self.whiteToMove
+            # Update Kings' Location
+            if move.pieceMoved == 'wK':
+                self.whiteKingLocation = (move.startRow, move.startCol)
+            if move.pieceMoved == "bK":
+                self.blackKingLocation = (move.startRow, move.startCol)
 
     def getValidMoves(self):
         """
         All moves considering checks.
         """
-        return self.getAllPossibleMoves()
+        # 1. Generate all possible moves
+        moves = self.getAllPossibleMoves()
+
+        # 2. For each move, make the move
+        for i in range(len(moves) - 1, -1, -1):
+            self.makeMove(moves[i])
+
+            # 3. Generate all opponnent's move
+            # 4. For all opponent's moves, see if they attack the king
+            self.whiteToMove = not self.whiteToMove
+            if self.inCheck():
+                # 5. If they attack the King, not valid move
+                moves.remove(moves[i])
+            self.whiteToMove = not self.whiteToMove
+            self.undoMove()
+        if len(moves) == 0:  # Either Checkmate or StaleMate
+            if self.inCheck():
+                self.checkMate = True
+            else:
+                self.staleMate = True
+        else:
+            self.checkMate = False
+            self.staleMate = False
+
+        return moves
+
+    def inCheck(self):
+        """
+        Determine if current player is in check
+        """
+        if self.whiteToMove:
+            return self.squareUnderAttack(self.whiteKingLocation[0], self.whiteKingLocation[1])
+        return self.squareUnderAttack(self.blackKingLocation[0], self.blackKingLocation[1])
+
+    def squareUnderAttack(self, row, col):
+        """
+        Determine if the enemy can attack the square at (row, col)
+        """
+        self.whiteToMove = not self.whiteToMove
+        oppMoves = self.getAllPossibleMoves()
+        self.whiteToMove = not self.whiteToMove
+        for move in oppMoves:
+            if move.endRow == row and move.endCol == col:
+                return True
+        return False
 
     def getAllPossibleMoves(self):
         """
