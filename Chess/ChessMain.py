@@ -71,6 +71,10 @@ def main():
                     # reset user clicks
                     sq_selected = ()
                     player_clicks = []
+            elif e.type == pygame.KEYDOWN:  # Key Handler
+                if e.key == pygame.K_z:
+                    # undo move when 'z' is pressed
+                    gs.undoMove()
 
         drawGameState(screen, gs)
         clock.tick(MAX_FPS)
