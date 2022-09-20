@@ -69,14 +69,19 @@ def main():
                         player_clicks[1],
                         gs.board
                     )
-                    if move in validMoves:
-                        print(move.getChessNotation())
-                        gs.makeMove(move)
-                        moveMade = True
-                        # reset user clicks
-                        sq_selected = ()
-                        player_clicks = []
-                    else:
+                    for i in range(len(validMoves)):
+
+                        if move == validMoves[i]:
+                            if not move.isEnpassantMove == validMoves[i].isEnpassantMove:
+                                move.isEnpassantMove = validMoves[i].isEnpassantMove
+                            # print(move.isEnpassantMove == validMoves[i].isEnpassantMove)
+                            print(move.getChessNotation())
+                            gs.makeMove(move)
+                            moveMade = True
+                            # reset user clicks
+                            sq_selected = ()
+                            player_clicks = []
+                    if not moveMade:
                         player_clicks = [sq_selected]
 
             elif e.type == pygame.KEYDOWN:  # Key Handler
