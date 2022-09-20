@@ -4,6 +4,7 @@ This is the main driver file. Responsible for handling user input and displaying
 from lib2to3 import pygram
 import pygame
 import ChessEngine
+import ChessAI
 
 WIDTH = HEIGHT = 512
 DIMENSION = 8  # Dimension of chess board (8x8)
@@ -53,12 +54,19 @@ def main():
     # Keep track of player clicks (two tuples: [(6, 4), (4, 4)])
 
     gameOver = False
+
+    playerOne = False  # if Human is playing white then true
+    playerTwo = False  # if Human is playing black then true
+
     while running:
+        humanTurn = (gs.whiteToMove and playerOne) or\
+            (not gs.whiteToMove and playerTwo)
+
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 running = False
             elif e.type == pygame.MOUSEBUTTONDOWN:
-                if not gameOver:
+                if not gameOver and humanTurn:
                     location = pygame.mouse.get_pos()  # (x, y) location of mouse
                     col = location[0] // SQ_SIZE
                     row = location[1] // SQ_SIZE
@@ -106,6 +114,13 @@ def main():
                     player_clicks = []
                     moveMade = False
                     animate = False
+
+        # AI will find the move
+        if not gameOver and not humanTurn:
+            AIMove = ChessAI.findRandomMove(validMoves)
+            gs.makeMove(AIMove)
+            moveMade = True
+            animate = True
 
         if moveMade:
             if animate:

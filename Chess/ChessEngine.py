@@ -457,7 +457,7 @@ class GameState():
                 endRow = row + d[0] * i
                 endCol = col + d[1] * i
                 if 0 <= endRow < 8 and 0 <= endCol < 8:
-                    if not piecePinned or pinDirection == d or pinDirection(-d[0], -d[1]):
+                    if not piecePinned or pinDirection == d or pinDirection == (-d[0], -d[1]):
                         endPiece = self.board[endRow][endCol]
                         if endPiece == '--':
                             moves.append(
