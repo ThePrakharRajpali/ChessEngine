@@ -43,66 +43,124 @@ def main():
     validMoves = gs.getValidMoves()
     moveMade = False  # Flag variable when move is made
 
+    animate = False  # Flag varible for animating the move
+
     # print(gs.board)
     load_images()
     running = True
     sq_selected = ()  # No Square is selected, keep track of last click
     player_clicks = []
     # Keep track of player clicks (two tuples: [(6, 4), (4, 4)])
+
+    gameOver = False
     while running:
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 running = False
             elif e.type == pygame.MOUSEBUTTONDOWN:
-                location = pygame.mouse.get_pos()  # (x, y) location of mouse
-                col = location[0] // SQ_SIZE
-                row = location[1] // SQ_SIZE
-                if sq_selected == (row, col):  # The user clicked the same square twice
-                    sq_selected = ()  # Deselect the square
-                    player_clicks = []  # clear the player_clicks
-                else:
-                    sq_selected = (row, col)
-                    player_clicks.append(sq_selected)  # Append for two clicks
-                if len(player_clicks) == 2:  # After 2nd Click
-                    move = ChessEngine.Move(
-                        player_clicks[0],
-                        player_clicks[1],
-                        gs.board
-                    )
-                    for i in range(len(validMoves)):
+                if not gameOver:
+                    location = pygame.mouse.get_pos()  # (x, y) location of mouse
+                    col = location[0] // SQ_SIZE
+                    row = location[1] // SQ_SIZE
+                    # The user clicked the same square twice
+                    if sq_selected == (row, col):
+                        sq_selected = ()  # Deselect the square
+                        player_clicks = []  # clear the player_clicks
+                    else:
+                        sq_selected = (row, col)
+                        # Append for two clicks
+                        player_clicks.append(sq_selected)
+                    if len(player_clicks) == 2:  # After 2nd Click
+                        move = ChessEngine.Move(
+                            player_clicks[0],
+                            player_clicks[1],
+                            gs.board
+                        )
+                        for i in range(len(validMoves)):
 
-                        if move == validMoves[i]:
-                            # if not move.isEnpassantMove == validMoves[i].isEnpassantMove:
-                            #     move.isEnpassantMove = validMoves[i].isEnpassantMove
-                            # print(move.isEnpassantMove == validMoves[i].isEnpassantMove)
-                            print(validMoves[i].getChessNotation())
-                            gs.makeMove(validMoves[i])
-                            moveMade = True
-                            # reset user clicks
-                            sq_selected = ()
-                            player_clicks = []
-                    if not moveMade:
-                        player_clicks = [sq_selected]
+                            if move == validMoves[i]:
+                                # if not move.isEnpassantMove == validMoves[i].isEnpassantMove:
+                                #     move.isEnpassantMove = validMoves[i].isEnpassantMove
+                                # print(move.isEnpassantMove == validMoves[i].isEnpassantMove)
+                                print(validMoves[i].getChessNotation())
+                                gs.makeMove(validMoves[i])
+                                moveMade = True
+                                animate = True
+                                # reset user clicks
+                                sq_selected = ()
+                                player_clicks = []
+                        if not moveMade:
+                            player_clicks = [sq_selected]
 
             elif e.type == pygame.KEYDOWN:  # Key Handler
                 if e.key == pygame.K_z:
                     # undo move when 'z' is pressed
                     gs.undoMove()
                     moveMade = True
+                    animate = False
+                if e.key == pygame.K_r:
+                    # Reset board when 'r' is pressed
+                    gs = ChessEngine.GameState()
+                    validMoves = gs.getValidMoves()
+                    sq_selected = ()
+                    player_clicks = []
+                    moveMade = False
+                    animate = False
+
         if moveMade:
+            if animate:
+                animateMove(gs.moveLog[-1], screen, gs.board, clock)
             validMoves = gs.getValidMoves()
             moveMade = False
-        drawGameState(screen, gs)
+            animate = False
+        drawGameState(screen, gs, validMoves, sq_selected)
+
+        if gs.checkMate:
+            gameOver = True
+            if gs.whiteToMove:
+                drawText(screen, "Black wins by checkmate")
+            else:
+                drawText(screen, "WHite wins by checkmate")
+        elif gs.staleMate:
+            gameOver = True
+            drawText(screen, "Stalemate")
+
         clock.tick(MAX_FPS)
         pygame.display.flip()
 
 
-def drawGameState(screen, gs):
+def highlightSquares(screen, gs, validMoves, sqSelected):
+    """
+    Highlights square selected and shows possible moves
+    """
+    if sqSelected != ():
+        row, col = sqSelected
+        if gs.board[row][col][0] == ('w' if gs.whiteToMove else 'b'):
+            # Highlight Selected Square
+            s = pygame.Surface((SQ_SIZE, SQ_SIZE))
+            s.set_alpha(100)
+            s.fill(pygame.Color('blue'))
+            screen.blit(s, (col * SQ_SIZE, row * SQ_SIZE))
+
+            # Highlight Moves from that square
+            s.fill(pygame.Color('yellow'))
+            for move in validMoves:
+                if move.startRow == row and move.startCol == col:
+                    screen.blit(
+                        s,
+                        (
+                            move.endCol * SQ_SIZE,
+                            move.endRow * SQ_SIZE
+                        )
+                    )
+
+
+def drawGameState(screen, gs, validMoves, sqSelected):
     """
     Responsible for graphics within current game state
     """
     drawBoard(screen)  # Draw square on the board
-    # add piece highlighting or move suggestions
+    highlightSquares(screen, gs, validMoves, sqSelected)
     drawPieces(screen, gs.board)  # draw pieces on top of squares
 
 
@@ -111,6 +169,7 @@ def drawBoard(screen):
     Draw the squares on the board.
     Top Left Square is always light.
     """
+    global colors
     colors = [pygame.Color("white"), pygame.Color("gray")]
 
     for row in range(DIMENSION):
@@ -146,6 +205,61 @@ def drawPieces(screen, board):
                         SQ_SIZE
                     )
                 )
+
+
+def animateMove(move, screen, board, clock):
+    """
+    Animate a move
+    """
+    global colors
+    coords = []  # List of coordinates that the animation will move
+    dR = move.endRow - move.startRow
+    dC = move.endCol - move.startCol
+    framesPerSquare = 10  # Frames to move one square
+    frameCount = (abs(dR) + abs(dC)) * framesPerSquare
+    for frame in range(frameCount + 1):
+
+        row, col = (
+            move.startRow + dR * frame / frameCount,
+            move.startCol + dC * frame / frameCount
+        )
+        drawBoard(screen)
+        drawPieces(screen, board)
+        # erase piece moved from its ending square
+        color = colors[(move.endRow + move.endCol) % 2]
+        endSquare = pygame.Rect(
+            move.endCol * SQ_SIZE,
+            move.endRow * SQ_SIZE,
+            SQ_SIZE, SQ_SIZE
+        )
+        pygame.draw.rect(screen, color, endSquare)
+        # Draw Captured Piece on rectangle
+        if move.pieceCaptured != "--":
+            screen.blit(IMAGES[move.pieceCaptured], endSquare)
+        # Draw moving piece
+        screen.blit(
+            IMAGES[move.pieceMoved],
+            pygame.Rect(
+                col * SQ_SIZE,
+                row * SQ_SIZE,
+                SQ_SIZE,
+                SQ_SIZE
+            )
+        )
+        pygame.display.flip()
+        clock.tick(60)
+
+
+def drawText(screen, text):
+    font = pygame.font.SysFont("Helvetica", 32, True, False)
+    text_object = font.render(text, 0, pygame.Color("gray"))
+    text_location = pygame.Rect(0, 0, WIDTH, HEIGHT).move(
+        WIDTH / 2 - text_object.get_width() // 2,
+        HEIGHT / 2 - text_object.get_height() // 2
+    )
+    screen.blit(text_object, text_location)
+    text_object = font.render(text, 0, pygame.Color("black"))
+    screen.blit(text_object, text_location.move(2, 2))
 
 
 if __name__ == "__main__":

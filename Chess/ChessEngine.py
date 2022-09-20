@@ -253,6 +253,15 @@ class GameState():
             moves = self.getAllPossibleMoves()
             self.getCastleMoves(kingRow, kingCol, moves)
 
+        if len(moves) == 0:  # Either Checkmate or StaleMate
+            if self.inCheck:
+                self.checkMate = True
+            else:
+                self.staleMate = True
+        else:
+            self.checkMate = False
+            self.staleMate = False
+
         self.enpassantPossible = tempEnpassantPossible
         return moves
 
