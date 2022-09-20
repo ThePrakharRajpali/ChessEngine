@@ -72,11 +72,11 @@ def main():
                     for i in range(len(validMoves)):
 
                         if move == validMoves[i]:
-                            if not move.isEnpassantMove == validMoves[i].isEnpassantMove:
-                                move.isEnpassantMove = validMoves[i].isEnpassantMove
+                            # if not move.isEnpassantMove == validMoves[i].isEnpassantMove:
+                            #     move.isEnpassantMove = validMoves[i].isEnpassantMove
                             # print(move.isEnpassantMove == validMoves[i].isEnpassantMove)
-                            print(move.getChessNotation())
-                            gs.makeMove(move)
+                            print(validMoves[i].getChessNotation())
+                            gs.makeMove(validMoves[i])
                             moveMade = True
                             # reset user clicks
                             sq_selected = ()
