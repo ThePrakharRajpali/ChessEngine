@@ -38,9 +38,9 @@ def findBestMoveMinMaxIter(gs, validMoves):
         opponentMaxScore = -CHECKMATE
         for opponentMove in opponentMoves:
             gs.makeMove(opponentMove)
-            if gs.checkMate:
+            if gs.checkmate:
                 score = -turnMultiplier * CHECKMATE
-            elif gs.staleMate:
+            elif gs.stalemate:
                 score = STALEMATE
             else:
                 score = -turnMultiplier * scoreMaterial(gs.board)

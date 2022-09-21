@@ -114,6 +114,7 @@ def main():
                     player_clicks = []
                     moveMade = False
                     animate = False
+                    gameOver = False
 
         # AI will find the move
         if not gameOver and not humanTurn:
@@ -134,13 +135,13 @@ def main():
             animate = False
         drawGameState(screen, gs, validMoves, sq_selected)
 
-        if gs.checkMate:
+        if gs.checkmate:
             gameOver = True
             if gs.whiteToMove:
                 drawText(screen, "Black wins by checkmate")
             else:
                 drawText(screen, "WHite wins by checkmate")
-        elif gs.staleMate:
+        elif gs.stalemate:
             gameOver = True
             drawText(screen, "Stalemate")
 
