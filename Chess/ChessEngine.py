@@ -44,6 +44,11 @@ class GameState():
         self.checkmate = False
         self.stalemate = False
 
+        # TODO: Add the following features
+        # self.protects = [][]
+        # self.threatens = [][]
+        # self.squaresCanMoveTo = [][]
+
     # ======================================================== Make Move ===============================================================
 
     def makeMove(self, move):

@@ -56,7 +56,7 @@ def main():
     gameOver = False
 
     playerOne = False  # if Human is playing white then true
-    playerTwo = False  # if Human is playing black then true
+    playerTwo = True  # if Human is playing black then true
 
     while running:
         humanTurn = (gs.whiteToMove and playerOne) or\
@@ -122,7 +122,8 @@ def main():
             # AIMove = ChessAI.findBestMoveGreedy(gs, validMoves)
             # AIMove = ChessAI.findBestMoveMinMaxIter(gs, validMoves)
             # AIMove = ChessAI.findBestMoveMinMax(gs, validMoves)
-            AIMove = ChessAI.findBestMoveNegaMax(gs, validMoves)
+            # AIMove = ChessAI.findBestMoveNegaMax(gs, validMoves)
+            AIMove = ChessAI.findBestMoveNegaMaxAlphaBeta(gs, validMoves)
             if AIMove == None:
                 AIMove = ChessAI.findRandomMove(validMoves)
             gs.makeMove(AIMove)
