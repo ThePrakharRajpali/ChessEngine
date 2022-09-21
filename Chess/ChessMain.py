@@ -121,12 +121,13 @@ def main():
             # AIMove = ChessAI.findRandomMove(validMoves)
             # AIMove = ChessAI.findBestMoveGreedy(gs, validMoves)
             # AIMove = ChessAI.findBestMoveMinMaxIter(gs, validMoves)
-            AIMove = ChessAI.findBestMoveMinMax(gs, validMoves)
+            # AIMove = ChessAI.findBestMoveMinMax(gs, validMoves)
+            AIMove = ChessAI.findBestMoveNegaMax(gs, validMoves)
             if AIMove == None:
                 AIMove = ChessAI.findRandomMove(validMoves)
             gs.makeMove(AIMove)
             moveMade = True
-            animate = True
+            animate = False
 
         if moveMade:
             if animate:

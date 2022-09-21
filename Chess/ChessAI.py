@@ -14,7 +14,7 @@ pieceScore = {
 
 CHECKMATE = 1000
 STALEMATE = 0
-DEPTH = 3
+DEPTH = 2
 
 
 def findRandomMove(validMoves):
@@ -139,3 +139,33 @@ def scoreBoard(gs):
                 score -= pieceScore[square[1]]
 
     return score
+
+
+def findBestMoveNegaMax(gs, validMoves):
+    global nextMove
+    nextMove = None
+    findMoveNegaMax(gs, validMoves, DEPTH, 1 if gs.whiteToMove else -1)
+    return nextMove
+
+
+def findMoveNegaMax(gs, validMoves, depth, turnMultiplier):
+    """
+    Shorter min max algorithm
+    """
+    global nextMove
+
+    if depth == 0:
+        return turnMultiplier * scoreBoard(gs)
+
+    maxScore = -CHECKMATE
+    random.shuffle(validMoves)
+    for move in validMoves:
+        gs.makeMove(move)
+        nextMoves = gs.getValidMoves()
+        score = -findMoveNegaMax(gs, nextMoves, depth - 1, -turnMultiplier)
+        if score > maxScore:
+            maxScore = score
+            if depth == DEPTH:
+                nextMove = move
+        gs.undoMove()
+    return maxScore
