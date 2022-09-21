@@ -120,7 +120,8 @@ def main():
         if not gameOver and not humanTurn:
             # AIMove = ChessAI.findRandomMove(validMoves)
             # AIMove = ChessAI.findBestMoveGreedy(gs, validMoves)
-            AIMove = ChessAI.findBestMoveMinMaxIter(gs, validMoves)
+            # AIMove = ChessAI.findBestMoveMinMaxIter(gs, validMoves)
+            AIMove = ChessAI.findBestMoveMinMax(gs, validMoves)
             if AIMove == None:
                 AIMove = ChessAI.findRandomMove(validMoves)
             gs.makeMove(AIMove)
